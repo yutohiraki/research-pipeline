@@ -118,10 +118,12 @@ slack:
   dm_user_id: ""             # "U..."
   username: "論文Bot"
   icon_emoji: ":books:"
-  # --- スマホぽちぽち（Cloudflare Worker 経由）: さらに任意。cloudflare/SETUP.md 参照 ---
-  interactive: false
-  worker_url: ""
-  pull_secret: ""
+  # --- スマホぽちぽち（Slackボタンで選別・Cloudflare Worker 経由）------------------
+  # 研究室共有モデル: 管理者が Worker を1個立て、後輩は下の3つに「配られた共有値」を貼るだけ
+  # （bot_token/worker_url/pull_secret は共有、dm_user_id だけ自分）。Cloudflare不要。cloudflare/SETUP.md 参照。
+  interactive: false         # true でボタン付き通知
+  worker_url: ""             # ラボ共有の Worker URL
+  pull_secret: ""            # ラボ共有の合言葉（Worker の PULL_SECRET と一致）
   digest_recent: 12
   digest_classic: 6
   post_pause: 0.5

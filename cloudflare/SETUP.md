@@ -1,86 +1,81 @@
-# Slack ぽちぽち セットアップ手順（Cloudflare Worker）
+# Slack ぽちぽち セットアップ（Cloudflare Worker・研究室共有モデル）
 
-Slack の ✅取り込む / 🗑️いらない ボタンを、Mac が寝ていても拾えるようにする。所要 15〜20分・全部無料。
+Slack の ✅取り込む / 🗑️いらない ボタンで論文を選別（Mac が寝ていても拾える）。全部無料。
 
-全体像:
+**研究室モデル（推奨）**: **管理者（先輩）が Worker を1個だけ立てて共有** → **後輩は config を貼るだけ**（Cloudflare も Slack アプリ作成も不要）。
+Worker はタップを **Slackユーザーごとのキュー**に分けるので、1つを全員で共有しても混ざりません。
+
 ```
-朝  Mac → Slackに1論文=1メッセージ（✅/🗑️ボタン）を投稿
-昼  スマホ Slackで ✅/🗑️ をタップ
-    → Cloudflare Worker が署名検証して KV に記録＋メッセージを「✅/🗑️済み」に更新
-夜  Remote Controlで「取り込んで」→ Mac が Worker からキュー取得
-       ✅ → inboxを [x] に → 深掘り取り込み
-       🗑️ → dismissed.json に登録＋inboxから削除（＝×作業ゼロ）
+朝  各自の Mac → 自分のSlack DMに ✅/🗑️ ボタン付きで新着を投稿
+昼  スマホSlackで ✅/🗑️ タップ → 共有Workerが署名検証してユーザ別キューに記録＋メッセージ更新
+夜  「取り込んで」→ 各自のMacが自分のキューだけ取得（✅→[x] / 🗑️→dismissed）
 ```
 
 ---
 
-## A. Cloudflare 側（Worker を置く）
+# 【管理者（先輩）が1回だけ】Worker と Slack アプリを用意
 
-1. **無料アカウント作成**: https://dash.cloudflare.com/sign-up （クレカ不要）。
-2. **KV 名前空間を作る**: ダッシュボード左メニュー **Storage & Databases → KV → Create a namespace**。名前は `research-queue` 等。作成。
-3. **Worker を作る**: **Workers & Pages → Create → Workers → Create Worker**。名前 `research-slack` 等 → **Deploy**（雛形が出る）→ **Edit code**。
-4. **コードを貼る**: エディタの中身を全消しして、このリポジトリの [`worker.js`](worker.js) の**全文を貼り付け** → **Deploy**。
-5. **KV をバインド**: Worker の **Settings → Bindings → Add → KV namespace**。
-   - Variable name: **`QUEUE`**（この名前で固定）
-   - KV namespace: さっき作った `research-queue`
-   - Save。
-6. **Secret を2つ登録**: **Settings → Variables and Secrets → Add**（type=Secret）。
-   - `SLACK_SIGNING_SECRET` … （下の B-2 で取得する Slack の Signing Secret）
-   - `PULL_SECRET` … 好きな長い合言葉（例: `openssl rand -hex 24` の出力）。**メモしておく**。
-   - Save し、Worker を **Deploy** し直す。
-7. **Worker の URL を控える**: Worker のトップに出る `https://research-slack.<あなた>.workers.dev`。
+## A. Cloudflare Worker（ラボに1個）
+1. **無料アカウント**: https://dash.cloudflare.com/sign-up （クレカ不要）。
+2. **KV 名前空間**: 左メニュー **Storage & Databases → KV → Create a namespace**（名前 `research-queue` 等）。
+3. **Worker 作成**: **Workers & Pages → Create → Workers → Create Worker**（名前 `research-slack` 等）→ **Deploy** → **Edit code**。
+4. **コード貼付**: エディタを全消し → このリポジトリの [`worker.js`](worker.js) を**全文貼付** → **Deploy**。
+5. **KV バインド**: Worker **Settings → Bindings → Add → KV namespace**。Variable name = **`QUEUE`**（固定）／namespace = `research-queue` → Save。
+6. **Secret 2つ**: **Settings → Variables and Secrets → Add**（type=Secret）。
+   - `SLACK_SIGNING_SECRET` … B-2 で取得する Slack の Signing Secret
+   - `PULL_SECRET` … 好きな長い合言葉（例 `openssl rand -hex 24`）。**後輩に配る**のでメモ。
+   - Save → 再 **Deploy**。
+7. **Worker URL を控える**: `https://research-slack.<ラボ>.workers.dev`。
 
----
+## B. Slack アプリ（ラボに1個・後輩全員が同じワークスペースに入る）
+1. https://api.slack.com/apps → 「論文Bot」アプリ → **Interactivity & Shortcuts** を ON → **Request URL** に Worker URL（A-7）→ Save。
+2. **Basic Information → App Credentials → Signing Secret** をコピー → A-6 の `SLACK_SIGNING_SECRET` に入れて再 Deploy。
+3. Bot に `chat:write`（DM 通知に必要）。後輩がDMを受け取れるよう、後輩を同じワークスペースに追加。
+4. **Bot User OAuth Token（`xoxb-…`）** を控える（後輩に配る）。
 
-## B. Slack 側（ボタンの送り先を Worker に）
-
-Slack App 管理画面: https://api.slack.com/apps → 既存の「論文Bot」アプリを開く。
-
-1. **Interactivity を ON**: 左メニュー **Interactivity & Shortcuts** → トグル ON →
-   **Request URL** に **Worker の URL**（A-7）をそのまま貼る → **Save Changes**。
-2. **Signing Secret を取得**: 左メニュー **Basic Information → App Credentials → Signing Secret** の「Show」→ コピー →
-   これを A-6 の `SLACK_SIGNING_SECRET` に入れて Worker を Deploy。
-3. （権限）Bot に `chat:write` があればOK（既に DM 通知が飛んでいるなら付いています）。
+## C. 後輩に配る3つの値（共有）
+セットアップ後、後輩に渡す（1回作れば全員同じ）:
+- **bot_token**（`xoxb-…`）／ **worker_url**（`https://…workers.dev`）／ **pull_secret**（A-6 の合言葉）
 
 ---
 
-## C. Mac 側（config.yaml）
+# 【後輩（各自）】config を貼るだけ（Cloudflare 不要・Slackアプリ作成不要）
 
-`config.yaml` の `slack:` を編集:
+1. ラボの Slack ワークスペースに参加。
+2. **自分のメンバーIDを取得**: Slack 自分のプロフィール →「…」→「メンバーIDをコピー」（`U…`）。
+3. `config.local.yaml` の `slack:` に貼る（3つは配られた共有値、`dm_user_id` だけ自分の）:
 ```yaml
 slack:
-  interactive: true                      # ← ボタン付き通知を有効化
-  worker_url: "https://research-slack.<あなた>.workers.dev"   # A-7
-  pull_secret: "……"                     # A-6 の PULL_SECRET と“完全一致”
+  enabled: true
+  interactive: true
+  bot_token: "<ラボの bot_token（xoxb-…）>"
+  dm_user_id: "<自分のメンバーID（U…）>"
+  worker_url: "<ラボの worker_url>"
+  pull_secret: "<ラボの pull_secret>"
 ```
+これだけで、朝の通知にボタンが付き、タップが**自分の**inboxに反映されます（他人のと混ざりません）。
 
 ---
 
-## D. 動作テスト
-
+# 動作テスト（管理者・後輩とも）
 ```bash
-cd /Users/tonn/Desktop/Project/research-pipeline
-# 1) Worker 疎通（ok と出れば生きてる）
-curl -s https://research-slack.<あなた>.workers.dev/ ; echo
-# 2) pull 認証（[]（空配列）が返ればOK。401なら pull_secret 不一致）
-curl -s -H "Authorization: Bearer <PULL_SECRET>" https://research-slack.<あなた>.workers.dev/pull/want ; echo
-# 3) 朝の通知をボタン付きで手動送信（Slackを確認）
-/Users/tonn/matlab_pyenv312/bin/python3 triage_main.py --preview --no-slack   # まず中身確認
-#    本番でボタン通知したい時（vaultも更新される）:
-#    /Users/tonn/matlab_pyenv312/bin/python3 triage_main.py --force-classic
-# 4) スマホSlackで ✅/🗑️ をタップ → メッセージが「✅/🗑️済み」に変われば成功
-# 5) タップ結果を取り込みに反映:
-/Users/tonn/matlab_pyenv312/bin/python3 slack_queue.py --sync    # ✅→[x] / 🗑️→除外
+# 1) Worker 疎通（ok が返れば生きてる）
+curl -s https://research-slack.<ラボ>.workers.dev/ ; echo
+# 2) pull 認証＋ユーザ別（自分のIDで []（空配列）が返ればOK。401=pull_secret不一致 / 400=userなし）
+curl -s -H "Authorization: Bearer <PULL_SECRET>" "https://research-slack.<ラボ>.workers.dev/pull/want?user=<自分のU…>" ; echo
+# 3) 朝の通知をボタン付きで送る（本番・vaultも更新）
+python3 triage_main.py --force-classic       # ${PAPER_PYTHON:-python3} を使う環境も可
+# 4) スマホSlackで ✅/🗑️ タップ → メッセージが「✅/🗑️済み」に変われば成功
+# 5) タップを取り込みに反映
+python3 slack_queue.py --sync                 # ✅→[x] / 🗑️→除外
 ```
-
-以降は自動:
-- 毎朝の `triage_main.py` が「前日までのタップ」を反映してから inbox を作り、新着をボタン付きで通知。
-- `promote_check.py --prepare`（＝Remote Controlで「取り込んで」した時）も先に同期するので、✅した論文がそのまま取り込み対象になる。
+以降は自動: 毎朝の `triage_main.py` と「取り込んで」（`promote_check.py --prepare`）が、実行前に自分のタップを同期します。
 
 ---
 
 ## メモ
-- 通知は **1論文=1メッセージ**。多いと感じたら `config.yaml` の `slack.digest_recent`/`digest_classic` を下げる。
-- 🗑️ をタップした論文は次回以降**二度と出ない**（`dismissed.json` 永久登録）。× を付ける作業は不要。
-- Worker/KV は無料枠（1日 write 1,000・read 100,000）で個人用途は余裕。
-- `wrangler` CLI 派は [`wrangler.toml`](wrangler.toml) を使って `wrangler deploy` でも可。
+- 通知は **1論文=1メッセージ**。多ければ `slack.digest_recent`/`digest_classic` を下げる。
+- 🗑️ タップは次回以降**二度と出ない**（`dismissed.json` 永久登録）。× 作業ゼロ。
+- Worker/KV は無料枠で研究室ぶんも余裕（write 1,000/日・read 100,000/日）。
+- 個人で1つずつ持ちたい人は、A・B・C を自分用に立ててもOK（同じ手順）。
+- `wrangler` CLI 派は [`wrangler.toml`](wrangler.toml) で `wrangler deploy` も可。

@@ -33,9 +33,11 @@ _UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
        "(KHTML, like Gecko) Chrome/120.0 Safari/537.36")
 
 
-def _pull(worker_url: str, secret: str, kind: str) -> list:
-    """Worker から want|dismiss のキューを取得（取得すると Worker 側で空になる）。"""
-    url = worker_url.rstrip("/") + f"/pull/{kind}"
+def _pull(worker_url: str, secret: str, kind: str, user: str) -> list:
+    """Worker から自分（user=SlackメンバーID）の want|dismiss キューを取得（取得すると空になる）。
+    user でキューを分けるので、1 つの Worker を研究室の全員で共有できる。"""
+    import urllib.parse
+    url = worker_url.rstrip("/") + f"/pull/{kind}?user=" + urllib.parse.quote(user)
     req = urllib.request.Request(url, headers={
         "Authorization": f"Bearer {secret}",
         "User-Agent": _UA,
@@ -59,12 +61,13 @@ def sync_inbox(cfg: dict, verbose: bool = True) -> dict:
     slack = cfg.get("slack", {})
     worker_url = slack.get("worker_url", "")
     secret = slack.get("pull_secret", "")
+    user = slack.get("dm_user_id", "")   # 自分の Slack メンバーID＝自分のキューの鍵
     inbox_path = cfg.get("pipeline", {}).get("inbox_path", "")
-    if not worker_url or not secret:
+    if not worker_url or not secret or not user:
         return {"want": 0, "dismiss": 0}
 
-    want = _pull(worker_url, secret, "want")
-    dismiss = _pull(worker_url, secret, "dismiss")
+    want = _pull(worker_url, secret, "want", user)
+    dismiss = _pull(worker_url, secret, "dismiss", user)
     want_keys = _keys_of(want)
     dismiss_keys = _keys_of(dismiss)
     if not want_keys and not dismiss_keys:

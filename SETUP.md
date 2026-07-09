@@ -160,11 +160,12 @@ launchctl load ~/Library/LaunchAgents/com.research-pipeline.prefetch.plist
 | 段階 | できること | 必要なもの | 難易度 |
 |---|---|---|---|
 | **① 通知だけ** | 朝、Slack DM に「新着＋スコア＋要約」が届く。選別は Obsidian（PC/スマホアプリ）で `[x]` | Slack Bot Token ＋ 自分のメンバーID | かんたん（Cloudflare不要） |
-| **② ぽちぽち選別** | Slack の **✅取り込む / 🗑️いらない ボタンをタップ**するだけで選別。Obsidian を開かなくていい | ①＋**無料 Cloudflare Worker のデプロイ** | 中（各自15分・[cloudflare/SETUP.md](cloudflare/SETUP.md)） |
+| **② ぽちぽち選別** | Slack の **✅取り込む / 🗑️いらない ボタンをタップ**するだけで選別。Obsidian を開かなくていい | **管理者が Worker を1個立てる**／後輩は config を貼るだけ | 後輩は**かんたん**（[cloudflare/SETUP.md](cloudflare/SETUP.md)） |
 
-- 設定は `config.local.yaml` の `slack.{enabled, bot_token, dm_user_id}`（①）＋ `slack.{interactive, worker_url, pull_secret}`（②）。
-- ⚠️ ②の「ボタンをタップ」は **Slack の仕様上、公開URL（受け口）が必須**なので Cloudflare Worker が要ります。ここが唯一の重め設定。
-- 💡 **研究室でまとめて楽にする案**: ラボで Worker を**1個だけ**立て、後輩は Slack アプリの向き先をそこに合わせるだけ（各自の Cloudflare デプロイ不要）にもできます。後輩が多いならこちらが楽。→ 必要なら実装します。
+- ✅ **研究室共有モデルに対応済み**: 管理者（先輩）が Cloudflare Worker を**1個だけ**立てれば、後輩は
+  **`config.local.yaml` の `slack:` に配られた値（bot_token / worker_url / pull_secret）＋自分のメンバーID を貼るだけ**。
+  **後輩は Cloudflare も Slack アプリ作成も不要**。Worker がタップを Slackユーザーごとのキューに分けるので、全員で共有しても混ざりません。手順は [cloudflare/SETUP.md](cloudflare/SETUP.md)。
+- 個人で1つずつ立てたい人も同じ手順で可。
 
 ## GPT/Gemini 経路（Claude Code を使えない後輩・正直な説明）
 

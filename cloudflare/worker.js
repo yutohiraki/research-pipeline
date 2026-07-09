@@ -16,7 +16,10 @@
  *   k = 一意キー（"doi:..." または "title:..."）。Mac 側はこれで inbox 行/除外を特定する。
  */
 
-const QUEUES = { want: "q:want", dismiss: "q:dismiss" };
+// 有効な種別。実際の KV キーは qKey(kind, userID) で **Slackユーザーごとに分ける**。
+// これで 1 つの Worker を研究室の全員で共有できる（各自の Cloudflare デプロイ不要）。
+const QUEUES = { want: true, dismiss: true };
+function qKey(kind, user) { return `q:${kind}:${user}`; }
 
 export default {
   async fetch(request, env, ctx) {
@@ -35,9 +38,13 @@ export default {
       if (!env.PULL_SECRET || auth !== `Bearer ${env.PULL_SECRET}`) {
         return json({ error: "unauthorized" }, 401);
       }
-      const raw = await env.QUEUE.get(QUEUES[kind]);
+      // どのユーザのキューを取るか（＝そのユーザ自身の Slack メンバーID）。共有Worker対応。
+      const user = url.searchParams.get("user") || "";
+      if (!user) return json({ error: "missing user param" }, 400);
+      const key = qKey(kind, user);
+      const raw = await env.QUEUE.get(key);
       const items = raw ? JSON.parse(raw) : [];
-      await env.QUEUE.put(QUEUES[kind], "[]"); // 取得したら空にする
+      await env.QUEUE.put(key, "[]"); // 取得したら空にする
       return json({ items });
     }
 
@@ -61,13 +68,14 @@ export default {
       try { v = JSON.parse(action.value || "{}"); } catch { v = {}; }
       const kind = v.a === "dismiss" ? "dismiss" : "want";
 
-      // KV キューへ追記（read-modify-write。単一ユーザ想定で十分）
-      const key = QUEUES[kind];
+      // タップしたユーザの Slack メンバーID でキューを分ける（共有Worker対応）。
+      const userID = (payload.user && payload.user.id) || "";
+      const key = qKey(kind, userID);
       const raw = await env.QUEUE.get(key);
       const items = raw ? JSON.parse(raw) : [];
       items.push({
         k: v.k || "", t: v.t || "",
-        user: (payload.user && payload.user.id) || "",
+        user: userID,
         ts: Math.floor(Date.now() / 1000),
       });
       await env.QUEUE.put(key, JSON.stringify(items));
