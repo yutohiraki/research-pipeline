@@ -162,13 +162,23 @@ flowchart LR
 - 放置した新着は14日で自動消滅。
 - 1日の深掘り上限は5件（`pipeline.promote_daily_limit`）。
 
-## 5. 自動化（任意・OS別）
+## 5. トリアージ自動化（必須・毎朝ほっといても最新論文が inbox に並ぶ）
 
-毎朝の自動トリアージは OS の仕組みで（**launchd 固定にしない**）:
-- macOS: launchd（`com.research-pipeline.triage.plist` を参考に絶対パスを自分用に）。スリープ対策 `sudo pmset repeat wakeorpoweron MTWRFSU 07:55:00`。
-- Linux: cron / systemd timer。
-- Windows: タスクスケジューラ。
-手動運用（`/paper-triage` を自分で叩く）でも全く問題ない。
+**トリアージ（収集→採点→要約→inbox更新→通知）は毎日の自動実行を必須**にする（放っておいても最新が貯まる＝本ツールの核）。
+採点は Groq 無料枠なので**自動化しても課金ゼロ**。深掘り取り込みだけは対話なので手動のまま。
+
+- **macOS（launchd）**: テンプレ `com.research-pipeline.triage.plist.template` の `__PYTHON__`（`which python3` の結果）と `__REPO__`（リポジトリの絶対パス）を置換し:
+  ```bash
+  # 置換後 ~/Library/LaunchAgents/com.research-pipeline.triage.plist として保存し
+  launchctl load ~/Library/LaunchAgents/com.research-pipeline.triage.plist
+  # （任意）Mac が寝ていても動くよう 07:55 に自動起床:
+  sudo pmset repeat wakeorpoweron MTWRFSU 07:55:00
+  ```
+  → **`/paper-setup` の中で「自動化も設定して」と頼めば、Claude がこの置換・保存・load を手伝います**。
+- **Linux**: cron に `0 8 * * * cd __REPO__ && python3 triage_main.py`（or systemd timer）。
+- **Windows**: タスクスケジューラで毎朝 `python3 __REPO__\triage_main.py`。
+
+> 最低ライン（どうしても設定できない時）: 毎朝 `/paper-triage` を自分で1回叩く。ただし自動化しないと貯まらないので**設定を強く推奨**。
 
 ### PDF 自動先取り（任意・往復を減らす）
 ✅した論文のOA PDFを日中に自動取得しておくと、取り込み時に「PDFを取ってから再依頼」の往復が消える。
@@ -179,29 +189,27 @@ launchctl load ~/Library/LaunchAgents/com.research-pipeline.prefetch.plist
 ```
 中身は `promote_check.py --prepare`（**LLMなし・非課金**のPDF確保＋Slackタップ同期）だけ。Linux/Winは同コマンドをcron/タスクで。
 
-## 6. 別プロジェクトから参考文献を取り込む（全プロジェクト共通）
+## 6. 📱 Slack 通知＆スマホ選別（§5 の自動実行の結果をここで受ける）
+
+§5 の朝の自動トリアージの結果を Slack DM で受け取り、スマホで捌けるようにする。**2段階**:
+
+| 段階 | できること | 必要なもの | 難易度 |
+|---|---|---|---|
+| **① 通知だけ** | 朝、Slack DM に「新着＋スコア＋要約」が届く。選別は Obsidian で `[x]` | Slack Bot Token ＋ 自分のメンバーID | かんたん（Cloudflare不要） |
+| **② ぽちぽち選別** | Slack の **✅取り込む / 🗑️いらない ボタンをタップ**するだけで選別。Obsidian を開かなくていい | ①＋ラボ共有 Worker に config を貼るだけ | 後輩は**かんたん** |
+
+- ⭐ **竹山研メンバーは ② を推奨**。ラボの共有 Cloudflare Worker が用意されているので、
+  **`config.local.yaml` の `slack:` に配られた値（bot_token / worker_url / pull_secret）＋自分のメンバーID を貼るだけ**で
+  ぽちぽち選別が使えます（**Cloudflare も Slack アプリ作成も不要**）。手順は [cloudflare/SETUP.md](cloudflare/SETUP.md) の「【後輩（各自）】」。
+- 竹山研以外／個人で試す人は ①（Bot Token だけ）から。②を自前で立てたい人も同じ手順で可（管理者パートを自分でやる）。
+
+## 7. 別プロジェクトから参考文献を取り込む（全プロジェクト共通）
 
 別のリポジトリ/プロジェクトで作業中に出てきた参考文献も、そのまま vault に深掘りメモ化できる:
 1. プラグインを **user スコープで** 入れる（`/plugin install` 時に user を選ぶ）＝どのプロジェクトでも `paper-note-writer` が効く。
 2. シェルの設定（`~/.zshrc` 等）に **`export PAPER_CONFIG="/absolute/path/to/config.local.yaml"`** を追加＝cwd に依存せず自分の vault を解決。
 3. 作業中に「**この論文を深掘り保存して**」（DOI/タイトル/手元PDF）→ skill が OA を自動DL（`fetch_pdf.py`）→ 全文読解 → vault にメモ生成。重複は自動チェック。
 - ⚠️ **無差別に取り込まない**（vault を関係ない論文で埋めない）。保存価値を自分で判断してから。非OAは `papers/` に手動配置。
-
----
-
-## 📱 Slack 通知＆スマホ選別（スマホで捌きたい人に・段階あり）
-
-「PCで Obsidian を開いて選ぶのがだるい／通勤中にスマホで捌きたい」人向け。**2段階**あります。
-
-| 段階 | できること | 必要なもの | 難易度 |
-|---|---|---|---|
-| **① 通知だけ** | 朝、Slack DM に「新着＋スコア＋要約」が届く。選別は Obsidian（PC/スマホアプリ）で `[x]` | Slack Bot Token ＋ 自分のメンバーID | かんたん（Cloudflare不要） |
-| **② ぽちぽち選別** | Slack の **✅取り込む / 🗑️いらない ボタンをタップ**するだけで選別。Obsidian を開かなくていい | **管理者が Worker を1個立てる**／後輩は config を貼るだけ | 後輩は**かんたん**（[cloudflare/SETUP.md](cloudflare/SETUP.md)） |
-
-- ✅ **研究室共有モデルに対応済み**: 管理者（先輩）が Cloudflare Worker を**1個だけ**立てれば、後輩は
-  **`config.local.yaml` の `slack:` に配られた値（bot_token / worker_url / pull_secret）＋自分のメンバーID を貼るだけ**。
-  **後輩は Cloudflare も Slack アプリ作成も不要**。Worker がタップを Slackユーザーごとのキューに分けるので、全員で共有しても混ざりません。手順は [cloudflare/SETUP.md](cloudflare/SETUP.md)。
-- 個人で1つずつ立てたい人も同じ手順で可。
 
 ## GPT/Gemini 経路（Claude Code を使えない後輩・正直な説明）
 

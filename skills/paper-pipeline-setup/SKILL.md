@@ -79,19 +79,36 @@ cp -n "$SRC/templates/"*.md "$VAULT/templates/" 2>/dev/null || true
 
 ---
 
-## ステップ4〜5: 任意（飛ばしてよい）
+## ステップ4: トリアージ自動化（必須）
+「毎朝ほっといても最新論文が inbox に並ぶ」ようにする＝本ツールの核。採点は Groq 無料枠なので**自動化しても課金ゼロ**。
+- OS を確認（macOS/Linux/Windows）。
+- **macOS**: `${CLAUDE_PLUGIN_ROOT:-.}/com.research-pipeline.triage.plist.template` の `__PYTHON__`（`which python3` の結果）と
+  `__REPO__`（このリポジトリの絶対パス。`pwd` で確認）を埋めた plist を用意する。
+  常駐登録（LaunchAgents への保存＋`launchctl load`）は**ユーザー自身の手**で行ってもらう（自動化の常駐化は本人承認が必要）:
+  ```bash
+  cp <埋めたplist> ~/Library/LaunchAgents/com.research-pipeline.triage.plist
+  launchctl load ~/Library/LaunchAgents/com.research-pipeline.triage.plist
+  # （任意）Mac が寝ていても動くよう: sudo pmset repeat wakeorpoweron MTWRFSU 07:55:00
+  ```
+- **Linux**: cron `0 8 * * * cd <repo> && python3 triage_main.py`／**Windows**: タスクスケジューラで毎朝 `triage_main.py`。
+- どうしても設定できない人には最低ライン「毎朝 `/paper-triage` を手動」を伝えるが、**自動化を強く推奨**（しないと最新が貯まらない）。
 
-### ④ Gmail アラート（任意・①のキーワード取得があるので無くてもよい）
+## ステップ5〜: 任意（飛ばしてよい）
+
+### ⑤ Gmail アラート（任意・①のキーワード取得があるので無くてもよい）
 「Google Scholar / WoS のアラートも**追加で**拾いますか？（自分でアラートを育てている人は精度UP）」
 - **やらない（推奨・既定）** → 空のままでOK。①のキーワード（OpenAlex recent）だけで最新は集まる。
 - やる → 2段階認証をON → アプリパスワード(16桁)発行（https://myaccount.google.com/apppasswords）
   → `gmail.address` / `gmail.app_password` を設定。※WoS アラートは機関契約が要る。
 
-### ⑤ Slack スマホ通知
-Phase1 は**スキップ推奨**と明示。やりたい人だけ `cloudflare/SETUP.md` に誘導し
-`slack.enabled: true` ＋ `bot_token` ＋（ぽちぽちまでやるなら）Worker 設定。
+### ⑥ Slack 通知＆スマホ選別
+- **竹山研メンバーには ②（ぽちぽち選別）を勧める**: ラボの共有 Cloudflare Worker があるので、
+  `slack.{enabled: true, interactive: true}` ＋ 配られた共有値（`bot_token`/`worker_url`/`pull_secret`）＋
+  自分の `dm_user_id`（SlackメンバーID）を貼るだけ。**Cloudflare も Slack アプリ作成も不要**（[cloudflare/SETUP.md](../../cloudflare/SETUP.md) の「後輩（各自）」）。
+- 竹山研以外／個人で試す人は ①（通知だけ・`bot_token`＋`dm_user_id`、Cloudflare不要）から。
+- 共有値がまだ無い（管理者が Worker 未構築）なら、まず ① にして後で ② に上げればよい。
 
-### ⑥ 別プロジェクトからも使う（任意）
+### ⑦ 別プロジェクトからも使う（任意）
 「他のリポジトリで作業中に出た参考文献も vault に取り込みたい」人には、
 シェル設定（`~/.zshrc` 等）に `export PAPER_CONFIG="<このリポジトリ>/config.local.yaml"` を1行追加する案内。
 プラグインを user スコープで入れておけば、どのプロジェクトからでも「この論文を深掘り保存して」が効く（SETUP.md §6）。

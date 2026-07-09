@@ -13,6 +13,11 @@ Worker はタップを **Slackユーザーごとのキュー**に分けるので
 
 ---
 
+> **既に旧版の Worker を立てている人の更新（1回だけ）**: KV と Secret はそのまま、コードだけ差し替えます。
+> Cloudflare ダッシュボード → **Workers & Pages → 自分の Worker → Edit code** → エディタを全消し →
+> [`worker.js`](worker.js) の新全文を貼付 → **Deploy**。これでユーザ別キュー（共有モデル）が有効になります。
+> `wrangler` 派は `cd cloudflare && wrangler deploy`。
+
 # 【管理者（先輩）が1回だけ】Worker と Slack アプリを用意
 
 ## A. Cloudflare Worker（ラボに1個）

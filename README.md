@@ -41,7 +41,7 @@ flowchart TD
     E ==>|セットアップ完了| F
 ```
 
-- **収集・採点・要約・inbox更新** = `/paper-triage`（毎朝の自動処理にもできる）
+- **収集・採点・要約・inbox更新** = `/paper-triage`（**毎朝の自動実行を推奨**。設定は SETUP §5）
 - **深掘り取り込み** = 「取り込んで」と言った時だけ（対話セッション＝サブスク内で無料）
 - **連携先** = 各自の **Obsidian vault**（規約に従って規約準拠メモが貯まる）
 - （任意）Slack DM 通知・スマホぽちぽち選別もあり（[cloudflare/SETUP.md](cloudflare/SETUP.md)）

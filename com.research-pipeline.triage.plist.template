@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 配布用テンプレート（macOS launchd）: 毎朝8時にトリアージ（収集→採点→inbox更新→Slack通知）を自動実行。
+     ★これが「毎日ほっといても最新論文が inbox に並ぶ」自動化の本体。
+     使い方:
+       1) __PYTHON__ を自分のpython3の絶対パスに（which python3 で確認）
+       2) __REPO__   をこのリポジトリの絶対パスに（例 /Users/you/Documents/paper-pipeline/research-pipeline）
+       3) 埋めてから ~/Library/LaunchAgents/com.research-pipeline.triage.plist として保存
+       4) launchctl load ~/Library/LaunchAgents/com.research-pipeline.triage.plist
+       5) （スリープ対策・任意）sudo pmset repeat wakeorpoweron MTWRFSU 07:55:00
+     Linux は cron/systemd、Windows はタスクスケジューラで `python3 __REPO__/triage_main.py` を毎朝実行。 -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.research-pipeline.triage</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__PYTHON__</string>
+        <string>__REPO__/triage_main.py</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PAPER_CONFIG</key>
+        <string>__REPO__/config.local.yaml</string>
+    </dict>
+    <key>WorkingDirectory</key>
+    <string>__REPO__</string>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>8</integer>
+        <key>Minute</key><integer>0</integer>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>__REPO__/triage.log</string>
+    <key>StandardErrorPath</key>
+    <string>__REPO__/triage.log</string>
+</dict>
+</plist>
