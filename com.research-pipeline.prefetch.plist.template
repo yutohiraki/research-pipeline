@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 配布用テンプレート（macOS launchd）: ✅した論文のOA PDFを日中4回、自動でpapers/に先取り。
+     深掘り取り込み(LLM)はしない＝非LLM・非課金のPDF確保だけ。
+     使い方:
+       1) __PYTHON__ を自分のpython3の絶対パスに（which python3 で確認）
+       2) __REPO__   をこのリポジトリの絶対パスに（例 /Users/you/research-pipeline）
+       3) cp com.research-pipeline.prefetch.plist.template ~/Library/LaunchAgents/com.research-pipeline.prefetch.plist
+          （埋めてから拡張子を .plist に）
+       4) launchctl load ~/Library/LaunchAgents/com.research-pipeline.prefetch.plist
+     Linux は cron/systemd、Windows はタスクスケジューラで `python3 __REPO__/promote_check.py --prepare` を同様に。 -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.research-pipeline.prefetch</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__PYTHON__</string>
+        <string>__REPO__/promote_check.py</string>
+        <string>--prepare</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PAPER_CONFIG</key>
+        <string>__REPO__/config.local.yaml</string>
+    </dict>
+    <key>WorkingDirectory</key>
+    <string>__REPO__</string>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Hour</key><integer>13</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Hour</key><integer>21</integer><key>Minute</key><integer>30</integer></dict>
+    </array>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>__REPO__/prefetch.log</string>
+    <key>StandardErrorPath</key>
+    <string>__REPO__/prefetch.log</string>
+</dict>
+</plist>

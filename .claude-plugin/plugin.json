@@ -1,0 +1,8 @@
+{
+  "name": "research-paper-triage",
+  "displayName": "Research Paper Triage",
+  "version": "0.1.0",
+  "description": "論文を自動収集→関連度採点→Obsidian に一覧化し、採用した論文だけ PDF 全文から規約準拠の深掘りメモを生成するパイプライン（採点=Groq無料枠、深掘り=Claude サブスク内の対話セッション）",
+  "keywords": ["research", "papers", "obsidian", "triage", "academia", "literature-notes"],
+  "license": "MIT"
+}

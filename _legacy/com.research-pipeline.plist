@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.research-pipeline</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/tonn/matlab_pyenv312/bin/python3</string>
+        <string>/Users/tonn/Desktop/Project/research-pipeline/main.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline</string>
+
+    <!-- 毎朝9時に実行 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- ログ出力先 -->
+    <key>StandardOutPath</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline/pipeline.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline/pipeline.log</string>
+
+    <!-- ログイン時に自動ロード -->
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

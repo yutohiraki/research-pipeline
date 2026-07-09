@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.research-pipeline.triage</string>
+
+    <!-- 毎朝8:00: 最新(+月曜は古典)を収集→claude採点→_inbox.md生成→Slack DM -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/tonn/matlab_pyenv312/bin/python3</string>
+        <string>/Users/tonn/Desktop/Project/research-pipeline/triage_main.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- claude CLI とシステムコマンドのため PATH を明示 -->
+        <key>PATH</key>
+        <string>/Users/tonn/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/tonn</string>
+    </dict>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline/triage.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline/triage.log</string>
+</dict>
+</plist>

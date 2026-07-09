@@ -1,0 +1,19 @@
+# wrangler CLI で Worker をデプロイする人向け（ダッシュボード貼付でも可・SETUP.md 参照）
+#
+#   npm i -g wrangler
+#   wrangler login
+#   wrangler kv namespace create QUEUE     # 出力の id を下の kv_namespaces.id に貼る
+#   wrangler secret put SLACK_SIGNING_SECRET
+#   wrangler secret put PULL_SECRET
+#   wrangler deploy
+
+name = "research-slack"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# KV: この Worker から env.QUEUE で参照する。id は上のコマンド出力に置き換え。
+[[kv_namespaces]]
+binding = "QUEUE"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# SLACK_SIGNING_SECRET / PULL_SECRET は `wrangler secret put` で登録（ここには書かない）

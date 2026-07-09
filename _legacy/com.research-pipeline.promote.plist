@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.research-pipeline.promote</string>
+
+    <!-- 15分ごと: _inbox.md の「✅採用(確定)」行を深掘り取り込み(claude sonnet, 5件/日上限) -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/tonn/matlab_pyenv312/bin/python3</string>
+        <string>/Users/tonn/Desktop/Project/research-pipeline/promote_check.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/tonn/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/tonn</string>
+    </dict>
+
+    <!-- 15分間隔。確定行が無ければ即終了するので空振りは軽い -->
+    <key>StartInterval</key>
+    <integer>900</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline/promote.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/tonn/Desktop/Project/research-pipeline/promote.log</string>
+</dict>
+</plist>

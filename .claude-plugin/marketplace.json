@@ -1,0 +1,13 @@
+{
+  "name": "research-pipeline",
+  "description": "論文トリアージ→Obsidian 深掘りメモのパイプライン（研究室内配布用）",
+  "plugins": [
+    {
+      "name": "research-paper-triage",
+      "displayName": "Research Paper Triage",
+      "description": "論文を毎朝収集→関連度採点→Obsidian _inbox.md に一覧→採用分だけ PDF 全文から深掘りメモ生成",
+      "version": "0.1.0",
+      "source": "."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# === 秘匿情報（絶対にコミットしない）===
+# 各自の実キー・パス入り設定。配布は config.example.yaml のみ。
+config.yaml
+config.local.yaml
+# Gmail OAuth（use_imap 方式では不要だが念のため）
+credentials.json
+token.json
+.env
+.env.*
+
+# === ローカル状態・生成物 ===
+dismissed.json
+promote_state.json
+*.log
+README.html
+_backup/
+.Rhistory
+.claude/settings.local.json
+
+# === Python ===
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# === OS ===
+.DS_Store
+
+# === 一時作業（深掘り用の作業ファイル）===
+/tmp/promote_worklist.json
+/tmp/paper_prompts/
+/tmp/paper_notes/

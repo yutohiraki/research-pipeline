@@ -1,0 +1,153 @@
+# ============================================================
+# research-pipeline 設定テンプレート（配布用）
+# ------------------------------------------------------------
+# 使い方: このファイルを config.local.yaml にコピーし、各自の値を埋める。
+#   cp config.example.yaml config.local.yaml
+# 実行時は環境変数 PAPER_CONFIG で差し替えるか、--config で渡す。
+#   export PAPER_CONFIG=./config.local.yaml
+#
+# ⚠️ config.local.yaml は秘匿情報を含む。git 管理外（.gitignore 済み）。
+#    チャット・コミット・共有ドライブに貼らないこと。
+# ⚠️ Groq 等のキーは「各自で無料発行」する。他人（オーナー）のキーを使い回さない
+#    （規約違反＋レート枯渇でみんな止まる）。
+# ============================================================
+
+# --- あなたの研究テーマ（採点・要約の唯一の基準。具体的なほど的確）----------
+# ここを自分の言葉で書き換える。何を研究し、どのテーマへの関連を重視するか。
+user:
+  research_context: |
+    主研究テーマ: （例）〇〇による△△の××
+    具体的に取り組んでいること（関連度はこの軸を最優先で評価）:
+      1. （例）テーマA
+      2. （例）テーマB
+      3. （例）テーマC
+    関心キーワード: （例）keyword1, keyword2, keyword3, ...
+
+# --- 採点エンジン（毎朝の自動トリアージ用）----------------------------------
+# groq  : 無料枠の LLaMA3.3 70B（推奨・既定）。日本語・判定が最良。課金なし（超過は429で止まるだけ）。
+# ollama: ローカルLLM（完全無料・オフライン・失効なし。小型ゆえ日本語はGroqに劣る）。
+# rule  : LLMなしのキーワード採点のみ（保険。鍵ゼロで動く）。
+# openai/gemini: Phase2 で対応予定（Claude Code を使えない後輩向け）。今は groq/ollama/rule のみ。
+# ※ どのエンジンでも、まずルールベースで非ゼロ採点→LLMで上書きするので、LLMが落ちても全件0にならない。
+scoring_engine: groq
+
+# --- Groq API（scoring_engine: groq のとき）----------------------------------
+# https://console.groq.com で無料キーを発行（クレジットカード不要）→ api_key に貼る。
+groq:
+  api_key: ""       # ← 各自の無料キー（gsk_...）。空なら Ollama→ルールベースに自動フォールバック。
+  model: "llama-3.3-70b-versatile"
+  batch: 4
+  pause: 2.0
+  timeout: 120
+  retries: 4
+
+# --- ローカルLLM（scoring_engine: ollama のとき）------------------------------
+# 事前に: brew install ollama && brew services start ollama && ollama pull qwen2.5:7b
+ollama:
+  host: "http://localhost:11434"
+  model: "qwen2.5:7b"
+  batch: 1
+  num_ctx: 2048
+  num_predict: 512
+  timeout: 120
+
+# --- メモの保存先（note-store）------------------------------------------------
+# obsidian : Obsidian vault に markdown で貯める（推奨・既定）。
+# notion   : Notion DB に貯める（Phase2以降。候補ミラーから対応）。
+note_store: obsidian
+
+# --- パイプライン共通（obsidian のとき）--------------------------------------
+# vault_dir を自分の Obsidian vault の絶対パスに。inbox_path は vault 直下の _inbox.md。
+pipeline:
+  vault_dir: "/path/to/your/obsidian_vault"          # ← 自分の vault
+  inbox_path: "/path/to/your/obsidian_vault/_inbox.md"
+  daily_candidate_limit: 30   # 1日に inbox へ載せる新着の最大数
+  inbox_retention_days: 14    # 未チェック新着を保持する日数
+  promote_daily_limit: 5      # 1日あたり深掘り取り込みの最大数（暴走防止）
+
+# --- Gmail アラート取得（任意）-----------------------------------------------
+# Google Scholar / WoS のアラートメールから最新論文を拾う。使わない場合は空のままでOK
+# （古典＝OpenAlex は認証不要なので、Gmail 無しでも古典収集だけで始められる）。
+# 手順: 2段階認証をON → アプリパスワード(16桁)を発行 → address/app_password に。
+gmail:
+  use_imap: true
+  address: ""                # ← 自分の Gmail アドレス
+  app_password: ""           # ← 16桁のアプリパスワード（スペースは無視可）
+  imap_days: 7
+  fetch_retries: 2         # 取得が瞬断(Broken pipe等)したときの再試行回数（=最大3回試行）
+  senders:
+    - "scholaralerts-noreply@google.com"
+    - "alerts-noreply@clarivate.com"
+  max_emails: 20
+
+# --- OpenAlex / Unpaywall（OA判定・古典収集。メール登録だけで無料）------------
+unpaywall:
+  email: ""                  # ← 自分のメールアドレス（Unpaywall API に必須）
+  semantic_scholar_api_key: ""   # 任意（無くても動く）
+
+# --- 古典（高被引用）論文の収集 ----------------------------------------------
+# 自分のテーマの主要キーワードで OpenAlex を被引用数降順に週1取得。
+# theme は表示名、search は OpenAlex の title_and_abstract 検索式（フレーズは "..." で精度UP）。
+classic:
+  per_query: 10
+  weekday: 0                 # 0=月 1=火 … 6=日
+  queries:
+    - theme: "（例）テーマA"
+      search: '"keyword phrase A" AND (context1 OR context2)'
+    - theme: "（例）テーマB"
+      search: '"keyword phrase B"'
+
+# --- Slack 通知（任意・既定オフ）---------------------------------------------
+# 朝の新着を自分に DM 通知。Phase1 は不要（後回しでOK）。使うなら:
+#   1. https://api.slack.com/apps → Create New App → Bot Token Scopes に chat:write
+#   2. Install → Bot User OAuth Token(xoxb-...) を bot_token に
+#   3. Slack プロフィール → メンバーIDをコピー → dm_user_id に
+slack:
+  enabled: false             # ← 使うときだけ true
+  bot_token: ""              # "xoxb-..."
+  dm_user_id: ""             # "U..."
+  username: "論文Bot"
+  icon_emoji: ":books:"
+  # --- スマホぽちぽち（Cloudflare Worker 経由）: さらに任意。cloudflare/SETUP.md 参照 ---
+  interactive: false
+  worker_url: ""
+  pull_secret: ""
+  digest_recent: 12
+  digest_classic: 6
+  post_pause: 0.5
+
+# --- Claude Code（深掘り取り込み）--------------------------------------------
+# 深掘りメモは「対話セッションの Claude」が無料（サブスク内）で行う。
+# /paper-import コマンドが promote_check.py を叩く。bin は環境に合わせて（which claude で確認）。
+claude:
+  bin: "claude"
+  triage_model: "haiku"
+  promote_model: "sonnet"
+
+# --- Notion（note_store: notion のとき。Phase2以降）--------------------------
+# 既に Notion で論文管理している後輩向け。Phase1(obsidian)では未使用。
+# database_id は Notion DB URL 末尾の32桁。properties は自分の DB のプロパティ名に合わせる。
+notion:
+  api_key: ""                # "ntn_..."
+  database_id: ""
+  default_status: "未読"
+  properties:
+    title: "タイトル"
+    authors: "著者"
+    url: "URL"
+    doi: "DOI"
+    published_date: "Published日"
+    status: "読了ステータス"
+    tags: "タグ/テーマ"
+    summary: "要約・メモ"
+    relevance: "自分の研究への示唆"
+    pdf_url: "PDFリンク"
+    source: "ソース"
+    added_date: "追加日"
+
+# --- タグ語彙（採点・分類で使うテーマタグ。自分のテーマに合わせて）------------
+sheets:
+  themes:
+    - "（例）タグA"
+    - "（例）タグB"
+    - "その他"
