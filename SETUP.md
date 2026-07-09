@@ -47,12 +47,28 @@ Claude Code にはいくつか形態があり、**非技術者はデスクトッ
     ```
   - 作業フォルダに入って起動: `cd <フォルダ> && claude`（初回はブラウザでログイン）。
 
-> **スラッシュコマンド（`/plugin`・`/paper-setup` 等）はデスクトップ・CLI どちらでも同じ**に動きます。以下 1-2 は共通。
+> **スラッシュコマンド（`/plugin`・`/paper-setup` 等）はデスクトップ・CLI どちらでも同じ**に動きます。以下は共通。
 
-### 1-2. リポジトリ取得＋プラグイン登録
+### 1-2. 作業フォルダを用意する（新しく作ってOK・参考例）
+Claude Code で使う作業フォルダは **新規に作ってOK**。分かりやすい場所に専用フォルダを1つ作るのがおすすめです（例: 名前を `paper-pipeline`）。
+
+- **🖥 Finder で作る（デスクトップアプリ派）**:
+  Finder を開く → 左の「**書類（Documents）**」を選ぶ → メニュー **ファイル → 新規フォルダ**（ショートカット **⌘⇧N**）→ 名前を `paper-pipeline` にする。
+- **⌨️ ターミナルで作る（CLI派）**:
+  ```bash
+  mkdir -p ~/Documents/paper-pipeline && cd ~/Documents/paper-pipeline
+  ```
+
+この `paper-pipeline` を **作業フォルダ**にします:
+- デスクトップアプリ → **Code タブでこのフォルダを選択**（画面下にフォルダ名が出る）
+- CLI → **このフォルダの中で `claude` を起動**
+
+次（1-3）で、この中にリポジトリを置きます（`paper-pipeline/research-pipeline/` ができる）。
+
+### 1-3. リポジトリ取得＋プラグイン登録
 **前提**: Claude Code は「選んだ作業フォルダの中」で動きます。`git clone` も依存インストールも **Claude に頼めば Claude がやる**ので、別ターミナルは基本不要です。
 
-1. **🤖 作業フォルダを1つ選ぶ**（1-1 で選んだフォルダ。ホームや新規でOK）。
+1. **🤖 1-2 で作った作業フォルダ（`paper-pipeline`）を Claude Code で開く**。
 2. **🤖 チャットにこう頼む**（Claude が clone と `pip install` を実行）:
    > このリポジトリをクローンして依存を入れて: https://github.com/yutohiraki/research-pipeline.git
 3. **🤖 プラグイン登録**:
