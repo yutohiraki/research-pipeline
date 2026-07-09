@@ -198,10 +198,16 @@ launchctl load ~/Library/LaunchAgents/com.research-pipeline.prefetch.plist
 | **① 通知だけ** | 朝、Slack DM に「新着＋スコア＋要約」が届く。選別は Obsidian で `[x]` | Slack Bot Token ＋ 自分のメンバーID | かんたん（Cloudflare不要） |
 | **② ぽちぽち選別** | Slack の **✅取り込む / 🗑️いらない ボタンをタップ**するだけで選別。Obsidian を開かなくていい | ①＋ラボ共有 Worker に config を貼るだけ | 後輩は**かんたん** |
 
-- ⭐ **竹山研メンバーは ② を推奨**。ラボの共有 Cloudflare Worker が用意されているので、
-  **`config.local.yaml` の `slack:` に配られた値（bot_token / worker_url / pull_secret）＋自分のメンバーID を貼るだけ**で
-  ぽちぽち選別が使えます（**Cloudflare も Slack アプリ作成も不要**）。手順は [cloudflare/SETUP.md](cloudflare/SETUP.md) の「【後輩（各自）】」。
-- 竹山研以外／個人で試す人は ①（Bot Token だけ）から。②を自前で立てたい人も同じ手順で可（管理者パートを自分でやる）。
+> **設定は手でファイルを編集しません。** Claude Code で「**Slackを設定して**」と言う（または `/paper-setup` の中）だけ。
+> Claude が下の値を1つずつ聞いて `config.local.yaml` に書きます。
+
+- ⭐ **竹山研メンバーは ② を推奨**。ラボの共有 Cloudflare Worker があるので、用意するのは次の4つだけ:
+  1. **先輩（管理者）からもらう**: `bot_token`（`xoxb-…`）／ `worker_url`（`https://…workers.dev`）／ `pull_secret`（合言葉）
+     ※これは全員共通。先輩が Slack のピン留めや共有メモで配ります。
+  2. **自分の Slack メンバーID**: Slack で自分のプロフィール →「…（その他）」→「**メンバーIDをコピー**」（`U…`）
+  → この4つを Claude に伝えるだけ。**Cloudflare も Slack アプリ作成も不要**。（内部で `slack.{enabled,interactive,bot_token,worker_url,pull_secret,dm_user_id}` に入ります）
+- 値がまだ配られていなければ、まず ①（`bot_token` と 自分のメンバーID だけ・通知のみ）で始めて、後で②に上げればOK。
+- 竹山研以外／個人で試す人は ① から。②を自前で立てたい人は [cloudflare/SETUP.md](cloudflare/SETUP.md) の「【管理者】」も自分でやる。
 
 ## 7. 別プロジェクトから参考文献を取り込む（全プロジェクト共通）
 

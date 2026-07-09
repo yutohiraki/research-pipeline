@@ -2,8 +2,8 @@
 name: paper-pipeline-setup
 description: >
   research-pipeline を後輩の環境で初期セットアップする対話 wizard。config.local.yaml を作り、
-  研究テーマ・Groq キー・Obsidian vault パスを埋め、健診まで通す。/paper-setup から呼ばれる。
-  「セットアップして」「初期設定」「使い始めたい」のときに使う。
+  研究テーマ・Groq キー・Obsidian vault パス・自動化・Slack を対話で埋め、健診まで通す。/paper-setup から呼ばれる。
+  「セットアップして」「初期設定」「使い始めたい」「Slackを設定して」「通知を設定して」「自動化を設定して」のときに使う。
 ---
 
 # paper-pipeline-setup — 初期セットアップ wizard
@@ -101,12 +101,19 @@ cp -n "$SRC/templates/"*.md "$VAULT/templates/" 2>/dev/null || true
 - やる → 2段階認証をON → アプリパスワード(16桁)発行（https://myaccount.google.com/apppasswords）
   → `gmail.address` / `gmail.app_password` を設定。※WoS アラートは機関契約が要る。
 
-### ⑥ Slack 通知＆スマホ選別
-- **竹山研メンバーには ②（ぽちぽち選別）を勧める**: ラボの共有 Cloudflare Worker があるので、
-  `slack.{enabled: true, interactive: true}` ＋ 配られた共有値（`bot_token`/`worker_url`/`pull_secret`）＋
-  自分の `dm_user_id`（SlackメンバーID）を貼るだけ。**Cloudflare も Slack アプリ作成も不要**（[cloudflare/SETUP.md](../../cloudflare/SETUP.md) の「後輩（各自）」）。
-- 竹山研以外／個人で試す人は ①（通知だけ・`bot_token`＋`dm_user_id`、Cloudflare不要）から。
-- 共有値がまだ無い（管理者が Worker 未構築）なら、まず ① にして後で ② に上げればよい。
+### ⑥ Slack 通知＆スマホ選別（**対話で設定する・後輩は config を手で触らない**）
+「Slack で通知＆スマホ選別を設定する？」と聞き、やるなら **あなた（Claude）が値を聞いて `config.local.yaml` に書く**。
+後輩に YAML を手編集させない（迷うので）。
+
+- **竹山研メンバー → ②（ぽちぽち）を勧める**。次の4つを1つずつ聞いて `slack:` に反映:
+  1. 先輩（管理者）から**配られた `bot_token`**（`xoxb-…`）
+  2. 先輩から配られた **`worker_url`**（`https://…workers.dev`）
+  3. 先輩から配られた **`pull_secret`**（合言葉）
+  4. **自分の Slack メンバーID**（取り方を案内: Slack で自分のプロフィール →「…（その他）」→「**メンバーIDをコピー**」→ `U…`）
+  → `slack.{enabled: true, interactive: true, bot_token, worker_url, pull_secret, dm_user_id}` に書き込む。**Cloudflare も Slackアプリ作成も不要**。
+- **配られた値をまだ持っていない**なら「先輩から bot_token / worker_url / pull_secret をもらってね」と案内し、今は①かスキップ。
+- 竹山研以外／個人で試す → ①（`bot_token`＋自分の `dm_user_id` だけ・`interactive:false`・Cloudflare不要）。管理者パートを自分でやれば②も可。
+- 設定後、`slack_queue.py --sync` が疎通するか軽く確認（401=pull_secret違い / 400=member ID未設定）。
 
 ### ⑦ 別プロジェクトからも使う（任意）
 「他のリポジトリで作業中に出た参考文献も vault に取り込みたい」人には、
