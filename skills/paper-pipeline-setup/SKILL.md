@@ -34,12 +34,14 @@ description: >
 
 ## ステップ1〜3: 必須（これだけで動く）
 
-### ① 研究テーマ（採点・要約の唯一の基準）
+### ① 研究テーマ＋キーワード（採点の基準＝そのまま論文の入口）
 「あなたは何を研究していますか？ 中心テーマと関心キーワードを数行で」と聞き、
-`config.local.yaml` の `user.research_context` を**その人自身の言葉**に置き換える
-（テンプレのプレースホルダを消す）。具体的なほど採点が的確になると伝える。
+`config.local.yaml` の `user.research_context` を**その人自身の言葉**に置き換える。具体的なほど採点が的確に。
 続けて「主要キーワードを3〜5個」聞き、`classic.queries` を生成する
-（各キーワードを OpenAlex 検索式 `"keyword" AND (context...)` の形に落とす。theme は表示名）。
+（各キーワードを OpenAlex 検索式 `"keyword" AND (context...)` の形に。theme は表示名）。
+**重要（後輩に伝える）**: このキーワードで **OpenAlex が「最近の論文（recent）」も「高被引用（classic）」も自動取得**する。
+つまり **Google Scholar / Web of Science のアラートを自分で設定しなくても、キーワードだけで最新論文が毎日集まる**
+（`recent.enabled: true` が既定）。キーワードを変えれば引っ張ってくる論文が変わる＝ここが入力の核。
 
 ### ② 採点エンジンと Groq キー
 既定＝**Groq 無料枠**（推奨）。以下を案内:
@@ -79,11 +81,11 @@ cp -n "$SRC/templates/"*.md "$VAULT/templates/" 2>/dev/null || true
 
 ## ステップ4〜5: 任意（飛ばしてよい）
 
-### ④ Gmail アラート（最新論文の収集元）
-「Google Scholar / WoS のアラートメールから最新論文も拾いますか？」
-- 使う → 2段階認証をON → アプリパスワード(16桁)を発行
-  （https://myaccount.google.com/apppasswords）→ `gmail.address` / `gmail.app_password` を設定。
-- 使わない → **空のままでよい**。古典（OpenAlex）だけで開始できる（後輩の障壁を最小化）。
+### ④ Gmail アラート（任意・①のキーワード取得があるので無くてもよい）
+「Google Scholar / WoS のアラートも**追加で**拾いますか？（自分でアラートを育てている人は精度UP）」
+- **やらない（推奨・既定）** → 空のままでOK。①のキーワード（OpenAlex recent）だけで最新は集まる。
+- やる → 2段階認証をON → アプリパスワード(16桁)発行（https://myaccount.google.com/apppasswords）
+  → `gmail.address` / `gmail.app_password` を設定。※WoS アラートは機関契約が要る。
 
 ### ⑤ Slack スマホ通知
 Phase1 は**スキップ推奨**と明示。やりたい人だけ `cloudflare/SETUP.md` に誘導し

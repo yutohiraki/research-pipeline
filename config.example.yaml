@@ -65,9 +65,19 @@ pipeline:
   inbox_retention_days: 14    # 未チェック新着を保持する日数
   promote_daily_limit: 5      # 1日あたり深掘り取り込みの最大数（暴走防止）
 
-# --- Gmail アラート取得（任意）-----------------------------------------------
-# Google Scholar / WoS のアラートメールから最新論文を拾う。使わない場合は空のままでOK
-# （古典＝OpenAlex は認証不要なので、Gmail 無しでも古典収集だけで始められる）。
+# --- 最新論文をキーワードで取得（OpenAlex・認証不要・Gmail不要）--------------
+# ★これがあるので、Scholar/WoS のアラートを設定していなくても、下の classic.queries の
+#   キーワード（＝あなたの研究テーマ）だけで「最近の論文」が毎日集まる。
+# enabled: false にすると Gmail アラートだけになる。queries を省略すると classic.queries を流用。
+recent:
+  enabled: true
+  days: 30            # 直近何日ぶんを対象にするか
+  per_query: 8        # 各キーワードの取得件数
+  # queries:          # 省略時は classic.queries のキーワードを使う（別にしたいときだけ書く）
+
+# --- Gmail アラート取得（任意・上の recent があるので無くてもよい）------------
+# Google Scholar / WoS のアラートメールからも最新論文を拾いたい人向け（アラートを自分で
+# 育てている人は精度が上がる）。使わないなら空のままでOK。
 # 手順: 2段階認証をON → アプリパスワード(16桁)を発行 → address/app_password に。
 gmail:
   use_imap: true

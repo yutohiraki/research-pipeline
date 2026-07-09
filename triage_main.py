@@ -107,9 +107,20 @@ def run(config_path: str, preview: bool = False, with_classic: bool = True,
     print(f"{'[PREVIEW] ' if preview else ''}トリアージ開始 {datetime.date.today().isoformat()}")
     print("=" * 50)
 
-    # 1. INGEST 最新
+    # 1. INGEST 最新（Gmail アラート ＋ OpenAlex キーワード検索）
+    # Gmail は任意。OpenAlex キーワード検索があるので、Scholar/WoS アラートを設定していなくても
+    # config のキーワード（研究テーマ）だけで最新論文が集まる。
     print("\n[1/4] 最新論文を取得・正規化...")
-    recent = ingest_recent(cfg)
+    recent = ingest_recent(cfg)   # Gmail アラート（未設定なら空で継続）
+    try:
+        from openalex_classic import fetch_recents
+        oa_recent = fetch_recents(cfg, mailto=mailto)
+        if oa_recent:
+            before = len(recent)
+            recent = dedupe(recent + oa_recent)
+            print(f"  [OpenAlex] 最新（キーワード）{len(oa_recent)}件 → 合流後 {len(recent)}件（Gmail {before}件）")
+    except Exception as e:
+        print(f"  [OpenAlex] 最新（キーワード）スキップ: {str(e)[:100]}")
 
     # 2. INGEST 古典（本来は週1）
     classics = []

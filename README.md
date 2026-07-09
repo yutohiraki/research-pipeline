@@ -27,7 +27,7 @@ flowchart TD
     end
 
     subgraph DAILY["📅 毎日の流れ"]
-        F["/paper-triage<br/>Gmail＋OpenAlexで収集 → Groqで採点＋日本語要約"] --> G["Obsidianの _inbox.md<br/>候補一覧（関連度スコア順）"]
+        F["/paper-triage<br/>キーワードで最新をOpenAlex収集（+Gmail任意）→ Groqで採点＋要約"] --> G["Obsidianの _inbox.md<br/>候補一覧（関連度スコア順）"]
         G --> H["要る論文にチェック（x）<br/>要らないは 🗑️ へ移動"]
         H --> I["Claudeに『取り込んで』<br/>= /paper-import"]
         I --> J{"PDFは取れる？"}
