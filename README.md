@@ -40,7 +40,7 @@ Obsidian vault の _inbox.md をチェックリストで更新（inbox_writer.py
 セットアップは **[SETUP.md](SETUP.md)** に集約。要点だけ:
 
 ```bash
-git clone <このリポジトリ>  research-pipeline
+git clone https://github.com/yutohiraki/research-pipeline.git
 cd research-pipeline
 python3 -m pip install -r requirements.txt
 # Claude Code で:
@@ -79,6 +79,7 @@ python3 -m pip install -r requirements.txt
 | `commands/` | スラッシュコマンド（paper-setup / paper-triage / paper-import / paper-doctor） |
 | `skills/paper-note-writer` | **核心**: PDF全文→規約準拠マルチファイルメモ生成 |
 | `skills/paper-pipeline-setup` | セットアップ wizard |
+| `vault_starter/` | 後輩の Obsidian vault に自動コピーする雛形（CLAUDE.md規約・テンプレ・ダッシュボード） |
 | `cloudflare/` | Slack ボタンの受け口 Worker（任意） |
 | `_legacy/` | 旧 as-is パイプライン（Notion/Sheets中心・非使用・参考保管） |
 

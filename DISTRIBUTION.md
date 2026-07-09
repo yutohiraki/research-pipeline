@@ -49,7 +49,7 @@
 ### Phase 0 — 配布の前提条件（最優先・独立作業）
 現状 **git リポジトリですらない**＋`config.yaml` に生キー約20行直書き。ここを整えないと配布は成立しない。
 
-- [ ] `git init`（**.gitignore を先に置いてから**。初回コミット前に `git status` で秘匿ファイルが untracked か目視確認）
+- [x] `git init`＋初回コミット（**2026-07-09 完了**・commit `7bb0506`「Initial: research-paper-triage plugin (Phase1)」48ファイル）。コミット前に追跡対象を秘匿スキャン（gsk_/xoxb-/ntn_/署名secret/pull_secret 等ゼロ）＋ `.gitignore` に `_backup/`/`.Rhistory`/`.claude/settings.local.json` 追加。フレッシュクローン検証で「後輩が受け取る内容＝秘匿ゼロ・構造完備・JSON有効」を確認。**→ Phase0 完了。**
 - [x] `.gitignore` 作成（config.yaml / config.local.yaml / credentials.json / token.json / dismissed.json / promote_state.json / *.log / README.html / __pycache__）
 - [x] `config.example.yaml` 作成（実キーを空＋コメント化、`user.research_context`・`classic.queries`・vaultパスを記入例プレースホルダに一般化）
 - [x] 旧 as-is 資産の `_legacy/` 隔離（**2026-07-09 完了**・削除ではなく隔離）。本線未参照を Python で厳密監査してから移動: `main.py` / `gemini_summarizer.py` / `sheets_writer.py` / `slack_notifier.py` / `notion_enricher.py` / `notion_to_paperpile.py` / `paperpile_importer.py` / 旧 `com.research-pipeline.plist` / 旧 `com.research-pipeline.promote.plist`＋`_legacy/README.md`。**残した**もの: `paper_fetcher.py`(promoteが使用)・`notion_writer.py`(Phase2 Notionアダプタ)・`gmail_fetcher.py`・`score_assist.py`。移動後に本線14モジュール import 回帰OK。

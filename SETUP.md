@@ -20,40 +20,58 @@
 
 ---
 
-## 1. インストール（Claude Code ＋ Obsidian レーン）
+## 0.5 先に用意するもの（初めての人向け）
+
+- **Claude Code**（これを動かす前提）。
+- **Obsidian**（無料・メモを貯める場所）: https://obsidian.md からDL → 起動して「**Create new vault**」で保管庫を1つ作る（名前と置き場所を決めるだけ）。
+  → 設定（左下⚙）→ **Community plugins** を有効化 → **Dataview** を検索して Install＋Enable（ダッシュボードの表描画に必要）。
+- **Groq の無料APIキー**（採点・要約用・クレカ不要）。取り方は §2 の「🔑 Groqキーの取り方」。
+
+## 1. インストール
 
 ```bash
-# 1) 取得（研究室の共有 git / zip を clone or 展開）
-git clone <この research-pipeline のURL>  research-pipeline
+git clone https://github.com/yutohiraki/research-pipeline.git
 cd research-pipeline
+python3 -m pip install -r requirements.txt
+```
+> private リポジトリなので、**collaborator に招待された GitHub アカウント**でないと clone できません（先輩に招待してもらう）。
+> Python が複数ある人（pyenv/conda）は `export PAPER_PYTHON=/path/to/python3` を設定しておくと確実。
 
-# 2) Python 依存（自分の python3 に）
-python3 -m pip install -r requirements.txt   # 最低限 pyyaml があれば動く
-
-# 3) Claude Code にプラグインとして登録（このリポ自身が marketplace）
-#    Claude Code 内で:
-#      /plugin marketplace add ./research-pipeline
-#      /plugin install research-paper-triage
+Claude Code 内で（このリポ自身がプラグイン置き場）:
+```
+/plugin marketplace add ./research-pipeline
+/plugin install research-paper-triage      # user スコープを選ぶと全プロジェクトで使える
 ```
 
-> Python が複数ある人（pyenv/conda 等）は、依存を入れた python を使わせるため
-> `export PAPER_PYTHON=/path/to/your/python3` を設定しておくと確実。
-
-## 2. セットアップ wizard
-
-Claude Code で:
+## 2. セットアップは「/paper-setup に答えるだけ」（設定ファイルを手で編集しない）
 
 ```
 /paper-setup
 ```
+これを実行すると **Claude が対話で全部聞いてくれます**。あなたは基本3つ答えるだけ:
 
-対話で **3つだけ**埋めれば動く:
-1. **研究テーマ**（採点・要約の唯一の基準。自分の言葉で）＋主要キーワード3〜5個
-2. **採点エンジンと Groq キー** — https://console.groq.com で**各自が無料キーを発行**（クレカ不要）。
-   ⚠️ **先輩のキーを使い回さない**（規約違反＋レート枯渇で全員止まる）。キーが無ければ `rule` で開始も可。
-3. **Obsidian vault の絶対パス**
+1. **研究テーマ** — 「何を研究してる？ 中心テーマと関心キーワードは？」に**自分の言葉で答える**だけ。
+   Claude が設定に書き込みます（**ファイルを手で開く必要なし**）。後で変えたくなったら、また Claude に「**研究テーマを◯◯に変えて**」と言えばOK。
+2. **Groq キー** — 下の手順で取った `gsk_...` を貼る。
+3. **Obsidian vault のパス** — 下の手順で取ったパスを貼る。
+   → Claude が vault の**フォルダ構成（literature_notes / papers / concepts / authors / templates）とテンプレート・ダッシュボードを自動で作成**します（ゼロから手作業で作らなくてOK）。
 
-Gmail アラート／Slack 通知／Notion は任意（既定オフ）。古典（OpenAlex・認証不要）だけでも始められる。
+Gmail / Slack / Notion は任意（後回しでOK）。まずはこの3つだけで動きます。
+
+### 🔑 Groqキーの取り方（クレカ不要・約3分）
+1. ブラウザで **https://console.groq.com/keys** を開く
+2. Google 等でサインアップ／ログイン（無料）
+3. 「**Create API Key**」→ 適当な名前（例 `paper`）→ 作成
+4. `gsk_...` で始まるキーが出る → **その場でコピー**（画面を閉じると二度と見られない。無くしたら作り直せばOK）
+5. `/paper-setup` の質問に貼る
+- ⚠️ **先輩のキーは使わない**（各自で発行。共有するとレート枯渇で全員止まる）
+- キーをまだ用意できなければ「`rule` で開始」と答えれば、採点なしでも動かせます（後で追加可）。
+
+### 📁 Obsidian vault パスの取り方（絶対パス）
+- **Obsidian**: 左側で保管庫（vault）名を右クリック → 「**Reveal in Finder**」（Win: Show in system explorer）→ 開いたフォルダが vault。
+- **macOS**: そのフォルダを Finder で選んで **⌘（Command）＋⌥（Option）＋C** で「パス名をコピー」。／ ターミナルにフォルダを**ドラッグ＆ドロップ**するとパスが入るのでコピーでも可。
+- **Windows**: フォルダを Shift＋右クリック →「パスのコピー」。
+- コピーした `/Users/あなた/.../保管庫名` のような文字列を `/paper-setup` に貼る。
 
 ## 3. 健診
 

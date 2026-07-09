@@ -50,17 +50,30 @@ description: >
 - Groq を使いたくない/オフラインがよい → `scoring_engine: ollama`（`brew install ollama` を案内）。
 - キーを今用意できない → `scoring_engine: rule`（LLMなし・鍵ゼロで動く。要約はテンプレになる）で開始し、後で切替。
 
-### ③ Obsidian vault パス
-「メモを貯める Obsidian vault の絶対パスは？」と聞き、
-`pipeline.vault_dir` と `pipeline.inbox_path`（= vault直下の `_inbox.md`）を設定。
-vault がまだ無ければ「Obsidian で新規 vault を作ってからそのフォルダを指定」と案内。
-`literature_notes/ papers/ concepts/ authors/` サブフォルダが無ければ作ってよいと伝える
-（`vault_dir/CLAUDE.md` があれば深掘り品質が上がるが、無くても skill 内蔵規約で動く）。
+### ③ Obsidian vault パス ＋ 構成の自動セットアップ
+まず Obsidian の準備を確認:
+- Obsidian 未導入なら https://obsidian.md からDL（無料）→「Create new vault」で新規vault作成。
+- 「Community plugins → Dataview」を Enable（ダッシュボードの表描画に必要）と案内。
 
-さらに `claude.bin` を実環境に合わせる:
+vault の**絶対パス**を聞く（取得方法も教える）:
+- Obsidian でvault名を右クリック → 「Reveal in Finder / Show in system explorer」→ 開いたフォルダが vault。
+- macOS: Finder でそのフォルダを選び **⌘⌥C**（パスをコピー）。／ ターミナルにフォルダをドラッグでもパスが入る。
+
+パスを得たら `pipeline.vault_dir` と `pipeline.inbox_path`（= `<vault>/_inbox.md`）を設定し、
+**フォルダ構成とスターターを自動作成**する（既存は上書きしない）:
 ```bash
-which claude    # 出たパスを claude.bin に（見つからなければ "claude" のままでよい）
+VAULT="<聞き取った vault の絶対パス>"
+mkdir -p "$VAULT"/literature_notes "$VAULT"/papers "$VAULT"/concepts "$VAULT"/authors "$VAULT"/templates
+SRC="${CLAUDE_PLUGIN_ROOT:-.}/vault_starter"
+for f in "CLAUDE.md" "📊 Research Dashboard.md" "🗂 論文ビュー（テーマ別）.md"; do
+  [ -e "$VAULT/$f" ] || cp "$SRC/$f" "$VAULT/$f"
+done
+cp -n "$SRC/templates/"*.md "$VAULT/templates/" 2>/dev/null || true
 ```
+コピー後、**`<vault>/CLAUDE.md` の §7「研究フォーカス」をユーザーの研究に書き換える**よう促す
+（①で聞いた `research_context` と同じ内容を反映するとよい）。これで後輩は Obsidian 構成をゼロから手作業で作らなくて済む。
+
+さらに `claude.bin` を実環境に合わせる（`which claude` の結果を貼る。見つからなければ `"claude"` のまま）。
 
 ---
 
