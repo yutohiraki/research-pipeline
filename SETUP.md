@@ -82,12 +82,22 @@ python・設定・Groq 疎通・vault 書込を点検。緑になったら次へ
 
 ## 4. 毎日の流れ
 
+```mermaid
+flowchart LR
+    A["/paper-triage<br/>収集→採点→要約"] --> B["Obsidian _inbox.md<br/>候補一覧（スコア順）"]
+    B --> C["要る論文にチェック（x）<br/>要らないは 🗑️ へ"]
+    C --> D["『取り込んで』<br/>= /paper-import"]
+    D --> E["PDF全文を読解<br/>（無ければ papers/ に手動DL）"]
+    E --> F["literature_notes/ に<br/>深掘りメモ＋リンク"]
+    F --> G["📊/🗂 に反映"]
+```
+
+具体的なコマンド:
 ```
 /paper-triage --preview     # まず /tmp に出して動作確認（vault に触れない）
 /paper-triage               # 本番: vault の _inbox.md を更新
 ```
 → Obsidian で `_inbox.md` を開く → **要る論文に `[x]`**（チェック）→
-
 ```
 /paper-import               # [x] した論文の PDF全文を読み、深掘りメモを生成
 ```

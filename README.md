@@ -13,25 +13,38 @@
 
 ---
 
-## 何をするか
+## 何をするか（流れ図）
 
-```
-Gmail (Scholar / WoS アラート) ＋ OpenAlex(最新正規化・古典高被引用)
-   │  ingest_recent.py / openalex_classic.py
-   ▼
-関連度スコア＋日本語要約（triage.py・Groq無料枠。落ちたら Ollama→ルールベース）
-   ▼
-Obsidian vault の _inbox.md をチェックリストで更新（inbox_writer.py）
-   ▼
-（任意）毎朝 Slack DM に「新着＋スコア＋要約」を通知（notify_slack_dm.py・ボタン可）
-   ▼
-「取り込んで」で ✅した論文の PDF全文を読み、
-   literature_notes/ に深掘りメモ＋[[Wikilink]]生成（promote_check.py＋paper-note-writer skill）
+> GitHub 上ではこの図がそのまま描画されます（Mermaid）。
+
+```mermaid
+flowchart TD
+    subgraph SETUP["🔧 初回セットアップ（1回だけ）"]
+        A["git clone / Download ZIP"] --> B["pip install -r requirements.txt"]
+        B --> C["Claude Code で /plugin install"]
+        C --> D["/paper-setup<br/>研究テーマ・Groqキー・vaultパスを対話で入力"]
+        D --> E["Obsidian vault を自動構成<br/>フォルダ＋規約＋テンプレ＋ダッシュボード"]
+    end
+
+    subgraph DAILY["📅 毎日の流れ"]
+        F["/paper-triage<br/>Gmail＋OpenAlexで収集 → Groqで採点＋日本語要約"] --> G["Obsidianの _inbox.md<br/>候補一覧（関連度スコア順）"]
+        G --> H["要る論文にチェック（x）<br/>要らないは 🗑️ へ移動"]
+        H --> I["Claudeに『取り込んで』<br/>= /paper-import"]
+        I --> J{"PDFは取れる？"}
+        J -->|"OA：自動取得"| K["PDF全文を読解"]
+        J -->|"有料／不可"| L["papers/ に手動DL<br/>→次の取り込みで拾う"]
+        L --> K
+        K --> M["literature_notes/ に深掘りメモ<br/>frontmatter＋ページ番号付き引用＋Wikilink"]
+        M --> N["concepts／authors に自動リンク<br/>📊Dashboard／🗂テーマ別ビューに反映"]
+    end
+
+    E ==>|セットアップ完了| F
 ```
 
-- **収集・採点・要約・inbox更新** = 毎朝の自動処理（`triage_main.py`／OSのスケジューラ）
-- **深掘り取り込み** = ユーザーが「取り込んで」と言った時だけ（対話セッション＝サブスク内で無料）
-- 連携先 = 各自の **Obsidian vault**（独自の CLAUDE.md 規約に従って規約準拠メモが貯まる）
+- **収集・採点・要約・inbox更新** = `/paper-triage`（毎朝の自動処理にもできる）
+- **深掘り取り込み** = 「取り込んで」と言った時だけ（対話セッション＝サブスク内で無料）
+- **連携先** = 各自の **Obsidian vault**（規約に従って規約準拠メモが貯まる）
+- （任意）Slack DM 通知・スマホぽちぽち選別もあり（[cloudflare/SETUP.md](cloudflare/SETUP.md)）
 
 ---
 
