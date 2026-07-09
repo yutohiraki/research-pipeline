@@ -50,7 +50,8 @@ flowchart TD
 
 ## クイックスタート
 
-セットアップは **[SETUP.md](SETUP.md)** に集約。要点だけ:
+**まず Claude Code 本体を入手**（初めてなら 🖥 **デスクトップアプリ推奨**・Mac/Windows。ターミナル派は CLI）。入手方法は [SETUP.md §1-1](SETUP.md)。
+セットアップ全体も **[SETUP.md](SETUP.md)** に集約。要点だけ:
 
 ```bash
 git clone https://github.com/yutohiraki/research-pipeline.git

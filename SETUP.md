@@ -27,33 +27,53 @@
   → 設定（左下⚙）→ **Community plugins** を有効化 → **Dataview** を検索して Install＋Enable（ダッシュボードの表描画に必要）。
 - **Groq の無料APIキー**（採点・要約用・クレカ不要）。取り方は §2 の「🔑 Groqキーの取り方」。
 
-## 1. インストール（ほぼ全部 Claude Code の中で完結）
+## 1. インストール
 
-> **どこで実行する？** の目印:
-> - 🤖 = **Claude Code のチャット欄**に打つ／頼む
-> - 💻 = ふつうのターミナル（Terminal.app 等）。← 実は使わなくてもOK（下記）
+> **どこで実行する？** の目印: 🤖 = **Claude Code のチャット欄**に打つ／頼む ／ 💻 = ふつうのターミナル。
 
-**大事な前提**: Claude Code は「**選んだ作業フォルダの中**」で動きます（あなたの画面**下の「research-pipeline / main」がそれ**）。
-そして `git clone` も依存インストールも **Claude に頼めば Claude がやってくれる**ので、**別のターミナルを開く必要はありません**。
+### 1-1. Claude Code 本体を入手（初めてなら 🖥 **デスクトップアプリ推奨**）
+Claude Code にはいくつか形態があり、**非技術者はデスクトップアプリが一番かんたん**（クリックでフォルダ選択・変更差分が見やすい・**ターミナル不要**）。
 
-手順:
-1. **🤖 Claude Code を開き、作業フォルダを1つ選ぶ**（ホームや新規フォルダでOK。画面下にフォルダ名が出る）。
-2. **🤖 チャットにこう頼む**（Claude が clone と pip install を実行）:
+- **🖥 デスクトップアプリ（Mac / Windows・推奨）**
+  - ダウンロード: [Mac](https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect) ／ Windows [x64](https://claude.ai/api/desktop/win32/x64/setup/latest/redirect)・[ARM64](https://claude.ai/api/desktop/win32/arm64/setup/latest/redirect)
+  - インストール → 起動 → **Claude サブスク（Pro / Max 等）でログイン** → 上部の **Code** タブ → **作業フォルダを選ぶ**
+    （選ぶと画面下にフォルダ名が出る＝それが作業フォルダ。あなたの画面の「research-pipeline / main」がこれ）。
+- **⌨️ ターミナル（CLI）派**（ターミナルに慣れている人向け）
+  - インストール（どれか1つ）:
+    ```bash
+    curl -fsSL https://claude.ai/install.sh | bash     # Mac / Linux（自動更新・推奨）
+    brew install --cask claude-code                     # Homebrew 派（更新は手動）
+    # Windows は PowerShell で: irm https://claude.ai/install.ps1 | iex
+    ```
+  - 作業フォルダに入って起動: `cd <フォルダ> && claude`（初回はブラウザでログイン）。
+
+> **スラッシュコマンド（`/plugin`・`/paper-setup` 等）はデスクトップ・CLI どちらでも同じ**に動きます。以下 1-2 は共通。
+
+### 1-2. リポジトリ取得＋プラグイン登録
+**前提**: Claude Code は「選んだ作業フォルダの中」で動きます。`git clone` も依存インストールも **Claude に頼めば Claude がやる**ので、別ターミナルは基本不要です。
+
+1. **🤖 作業フォルダを1つ選ぶ**（1-1 で選んだフォルダ。ホームや新規でOK）。
+2. **🤖 チャットにこう頼む**（Claude が clone と `pip install` を実行）:
    > このリポジトリをクローンして依存を入れて: https://github.com/yutohiraki/research-pipeline.git
-3. **🤖 プラグインとして登録**（スラッシュコマンド）:
+3. **🤖 プラグイン登録**:
    ```
    /plugin marketplace add ./research-pipeline
    /plugin install research-paper-triage      ← user スコープを選ぶと全プロジェクトで使える
    ```
+   （デスクトップアプリなら **Plugins パネル**からも入っているか確認できます）
 
-<details><summary>💻 自分でターミナルでやりたい人向け（任意）</summary>
+<details><summary>💻 最初から全部ターミナルでやる派（CLI・任意）</summary>
 
 ```bash
 git clone https://github.com/yutohiraki/research-pipeline.git
-cd research-pipeline && python3 -m pip install -r requirements.txt
+cd research-pipeline
+python3 -m pip install -r requirements.txt
+claude                                   # このフォルダで Claude Code CLI を起動
+# 起動後（今このフォルダにいるので marketplace は "." でOK）:
+#   /plugin marketplace add .
+#   /plugin install research-paper-triage
 ```
 Python が複数ある人（pyenv/conda）は `export PAPER_PYTHON=/path/to/python3` を設定しておくと確実。
-その後、そのフォルダを Claude Code で開いて上の 3. を実行。
 </details>
 
 > 公開リポなので **GitHub アカウントも招待も不要**。誰でも clone / ZIP ダウンロードできます。
