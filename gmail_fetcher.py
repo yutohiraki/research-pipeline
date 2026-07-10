@@ -27,7 +27,8 @@ def collect_alert_emails(gmail_cfg: dict) -> list:
     どちらも同じ形の dict（subject/sender/body/links/id）のリストを返す。"""
     # use_imap=true でも app_password 未設定なら旧OAuthに自動フォールバック（移行を滑らかに）
     if gmail_cfg.get("use_imap", True) and gmail_cfg.get("app_password", "").strip():
-        M = get_imap(gmail_cfg["address"], gmail_cfg.get("app_password", ""))
+        M = get_imap(gmail_cfg["address"], gmail_cfg.get("app_password", ""),
+                     timeout=int(gmail_cfg.get("imap_timeout", 30)))
         try:
             return fetch_alert_emails_imap(
                 M,
@@ -50,12 +51,15 @@ def collect_alert_emails(gmail_cfg: dict) -> list:
 # IMAP（アプリパスワード方式・トークン失効なし）
 # ──────────────────────────────────────────────
 
-def get_imap(address: str, app_password: str):
-    """Gmail に IMAP over SSL でログイン。app_password は16桁アプリパスワード（スペース無視）。"""
+def get_imap(address: str, app_password: str, timeout: float = 30):
+    """Gmail に IMAP over SSL でログイン。app_password は16桁アプリパスワード（スペース無視）。
+    timeout: socket タイムアウト（秒）。**これが無いと切断時に fetch が無限ブロックする**
+    （＝毎朝ジョブが何時間もハングする事故の原因）。タイムアウトすれば例外化し、
+    ingest_recent 側のリトライ（一過性エラー）が拾って再接続できる。"""
     if not app_password:
         raise RuntimeError("gmail.app_password が未設定です。"
                            "https://myaccount.google.com/apppasswords で発行して config.yaml に貼ってください。")
-    M = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+    M = imaplib.IMAP4_SSL("imap.gmail.com", 993, timeout=timeout)
     M.login(address, app_password.replace(" ", ""))
     return M
 

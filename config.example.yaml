@@ -85,6 +85,7 @@ gmail:
   app_password: ""           # ← 16桁のアプリパスワード（スペースは無視可）
   imap_days: 7
   fetch_retries: 2         # 取得が瞬断(Broken pipe等)したときの再試行回数（=最大3回試行）
+  imap_timeout: 30         # IMAPのsocketタイムアウト秒（切断時のハング防止。無いと朝ジョブが何時間も止まる）
   senders:
     - "scholaralerts-noreply@google.com"
     - "alerts-noreply@clarivate.com"
